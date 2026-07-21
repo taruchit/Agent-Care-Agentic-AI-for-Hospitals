@@ -1,11 +1,19 @@
 # tests/test_agents.py
+import sys
+from pathlib import Path
+
+# Explicitly add root project directory to sys.path
+root_dir = Path(__file__).resolve().parent.parent
+if str(root_dir) not in sys.path:
+    sys.path.insert(0, str(root_dir))
+
 import pytest
 import os
 import hashlib
 from tools import (
     process_and_dedupe_document, 
     search_department_and_slots, 
-    SessionLocal
+    SessionLocal,
 )
 from db.models import Base, PatientProfile, User
 from tools import engine

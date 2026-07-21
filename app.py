@@ -1,4 +1,7 @@
 # app.py
+from dotenv import load_dotenv
+load_dotenv()
+
 import streamlit as st
 from db.seed import seed_data
 from db.models import Base, User, Appointment, PatientDocument, Escalation, AuditEvent, PatientProfile

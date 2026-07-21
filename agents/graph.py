@@ -2,6 +2,12 @@
 from typing import TypedDict, Optional, List
 from langgraph.graph import StateGraph, END
 from langchain_core.messages import BaseMessage, SystemMessage, HumanMessage
+import os
+from dotenv import load_dotenv
+
+# Load environment variables before initializing LangChain / Groq components
+load_dotenv()
+
 from langchain_groq import ChatGroq
 import os
 import json
