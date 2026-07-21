@@ -1,1 +1,8 @@
-
+langgraph
+langchain-groq
+langchain-openai
+sqlalchemy
+streamlit
+pydantic
+pytest
+python-dotenv
