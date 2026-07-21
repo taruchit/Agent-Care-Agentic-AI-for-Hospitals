@@ -46,7 +46,7 @@ def get_or_create_patient(user_id: int, name: str = "", email: str = "") -> dict
     finally:
         session.close()
 
-def search_department_and_slots(dept_name: Optional[str] = None) -> dict:
+def search_department_and_slots(dept_name: Optional[str] = None) -> str:
     """
     Retrieves available appointment slots cleanly formatted.
     """
