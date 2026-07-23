@@ -20,7 +20,7 @@ jobs:
           python-version: "3.12"
 
       - name: Install uv
-        uses: astral-sh/setup-uv@v3
+        uses: astral-sh/setup-uv@v5
         with:
           version: "latest"
 
@@ -38,4 +38,4 @@ jobs:
           GROQ_API_KEY: ${{ secrets.GROQ_API_KEY }}
           DATABASE_URL: "sqlite:///agentcare.db"
         run: |
-          pytest
+          uv run pytest
