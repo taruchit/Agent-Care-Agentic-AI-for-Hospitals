@@ -1,4 +1,3 @@
-# tools.py
 import hashlib
 import json
 import datetime
