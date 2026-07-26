@@ -50,16 +50,17 @@ def seed_data():
     session.commit()
 
     # Seed Doctors (Stored without "Dr." prefix)
-    doc1 = Doctor(department_id=cardio.id, name="Sarah Jenkins")
-    doc2 = Doctor(department_id=ortho.id, name="Robert Chen")
-    session.add_all([doc1, doc2])
+    doc1 = Doctor(department_id=cardio.id, name="Taruchit Goyal")
+    doc2 = Doctor(department_id=ortho.id, name="Krish Naik")
+    doc3 = Doctor(department_id=gen_med.id, name="Sunny Savitha")
+    session.add_all([doc1, doc2, doc3])
     session.commit()
 
     # Seed Slots across multiple timeframes
     now = datetime.datetime.utcnow()
 
     slots = [
-        # Cardiology (Sarah Jenkins)
+        # Cardiology (Taruchit Goyal)
         AppointmentSlot(
             doctor_id=doc1.id,
             start_time=now + datetime.timedelta(days=1, hours=2),
@@ -70,18 +71,29 @@ def seed_data():
             start_time=now + datetime.timedelta(days=7, hours=2),
             end_time=now + datetime.timedelta(days=7, hours=3),
         ),
-        # Orthopedics (Robert Chen) - Next Week
+        # Orthopedics (Krish Naik) - Next Week
         AppointmentSlot(
             doctor_id=doc2.id,
             start_time=now + datetime.timedelta(days=7, hours=4),
             end_time=now + datetime.timedelta(days=7, hours=5),
         ),
-        # Orthopedics (Robert Chen) - Next Month
+        # Orthopedics (Krish Naik) - Next Month
         AppointmentSlot(
             doctor_id=doc2.id,
             start_time=now + datetime.timedelta(days=30, hours=4),
             end_time=now + datetime.timedelta(days=30, hours=5),
         ),
+        # General Medicine (Sunny Savitha)
+                AppointmentSlot(
+                    doctor_id=doc3.id,
+                    start_time=now + datetime.timedelta(days=1, hours=2),
+                    end_time=now + datetime.timedelta(days=1, hours=3),
+                ),
+                AppointmentSlot(
+                    doctor_id=doc3.id,
+                    start_time=now + datetime.timedelta(days=7, hours=2),
+                    end_time=now + datetime.timedelta(days=7, hours=3),
+                ),
     ]
 
     session.add_all(slots)
