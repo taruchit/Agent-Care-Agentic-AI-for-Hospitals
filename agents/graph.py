@@ -60,7 +60,7 @@ Respond in RAW JSON ONLY:
         if data.get("is_medical_or_emergency") is True:
             state["is_emergency_or_medical"] = True
             state["escalated"] = True
-            state["response_summary"] = "⚠️ Request flagged for safety review or emergency handling. Escalated to hospital staff."
+            state["response_summary"] = "Request flagged for safety review or emergency handling. Escalated to hospital staff."
             trigger_human_escalation(workflow_run_id=1, reason=data.get("reason", "Medical query flagged by guardrail"))
     except Exception as e:
         # In case of JSON parse error, allow administrative flow to continue
@@ -141,7 +141,7 @@ def execution_handler_agent(state: AgentState) -> AgentState:
         res = search_department_and_slots(dept)
         if res.get("status") == "success" and res.get("available_slots"):
             slot_info = [
-                f"Slot #{s['slot_id']}: Dr. {s['doctor_name']} ({s['department']}) at {s['start']}"
+                f"Slot #{s['slot_id']}: {s['doctor_name']} ({s['department']}) at {s['start']}\n"
                 for s in res["available_slots"]
             ]
             state["response_summary"] = "Available Slots Found:\n" + "\n".join(slot_info)
@@ -157,21 +157,21 @@ def execution_handler_agent(state: AgentState) -> AgentState:
         else:
             res = book_appointment_slot(patient_id=patient_id, slot_id=slot_id, reason=state["user_input"])
             if res.get("status") == "success":
-                state["response_summary"] = f"✅ Appointment successfully booked for slot #{slot_id}!"
+                state["response_summary"] = f"Appointment successfully booked for slot #{slot_id}!"
             else:
-                state["response_summary"] = f"❌ {res.get('message', 'Booking failed.')}"
+                state["response_summary"] = f"{res.get('message', 'Booking failed.')}"
 
     # 3. CANCEL APPOINTMENT
     elif intent == "cancel":
-        slot_id = state.get("slot_id")
-        if not slot_id:
-            state["response_summary"] = "Please specify the slot ID you want to cancel."
+        appt_id = state.get("appointment_id") or state.get("slot_id")
+        if not appt_id:
+            state["response_summary"] = "Please specify the appointment ID you want to cancel (e.g., 'Cancel Appointment ID 3')."
         else:
-            res = cancel_appointment_slot(patient_id=patient_id, slot_id=slot_id)
+            res = cancel_appointment_slot(appointment_id=int(appt_id))
             if res.get("status") == "success":
-                state["response_summary"] = f"❌ Appointment for slot #{slot_id} has been cancelled."
+                state["response_summary"] = res.get("message")
             else:
-                state["response_summary"] = f"⚠️ {res.get('message', 'Cancellation failed.')}"
+                state["response_summary"] = res.get('message', 'Cancellation failed.')
 
     # 4. RESCHEDULE APPOINTMENT
     elif intent == "reschedule":
@@ -182,16 +182,15 @@ def execution_handler_agent(state: AgentState) -> AgentState:
         else:
             res = reschedule_appointment_slot(patient_id=patient_id, old_slot_id=old_id, new_slot_id=new_id)
             if res.get("status") == "success":
-                state["response_summary"] = f"🔄 Rescheduled successfully from slot #{old_id} to slot #{new_id}."
+                state["response_summary"] = f"Rescheduled successfully from slot #{old_id} to slot #{new_id}."
             else:
-                state["response_summary"] = f"⚠️ {res.get('message', 'Reschedule failed.')}"
+                state["response_summary"] = res.get('message', 'Reschedule failed.')
 
     # DEFAULT FALLBACK
     else:
         state["response_summary"] = "I can help you search doctors, book/cancel slots, or process medical documents."
 
     return state
-
 
 # -------------------------------------------------------------------------
 # Conditional Router

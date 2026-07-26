@@ -131,8 +131,55 @@ def book_appointment_slot(patient_id: int, slot_id: int, doctor_id: Optional[int
     finally:
         session.close()
 
+def cancel_appointment_slot(appointment_id: int) -> dict:
+    """
+    Cancels an existing appointment by its Appointment ID and frees up the corresponding slot.
+    """
+    session = SessionLocal()
+    try:
+        # 1. Fetch the Appointment record
+        appointment = session.query(Appointment).filter(Appointment.id == appointment_id).first()
+        
+        if not appointment:
+            return {"status": "error", "message": f"Appointment ID #{appointment_id} not found."}
+            
+        if appointment.status == 'canceled':
+            return {"status": "error", "message": f"Appointment ID #{appointment_id} is already canceled."}
+
+        # 2. Update Appointment status
+        appointment.status = 'canceled'
+
+        # 3. Mark the associated AppointmentSlot as available again
+        slot = session.query(AppointmentSlot).filter(AppointmentSlot.id == appointment.slot_id).first()
+        if slot:
+            slot.status = 'available'
+
+        # 4. Insert Audit Event directly using the SAME session
+        audit_entry = AuditEvent(
+            actor_id=appointment.patient_id,
+            action="CANCEL_APPOINTMENT",
+            entity_type="Appointment",
+            entity_id=appointment.id,
+            metadata_json="{}"
+        )
+        session.add(audit_entry)
+
+        # 5. Commit everything in a SINGLE atomic transaction
+        session.commit()
+        
+        return {
+            "status": "success",
+            "message": f"Appointment ID #{appointment.id} has been successfully canceled."
+        }
+        
+    except Exception as e:
+        session.rollback()
+        return {"status": "error", "message": f"Error canceling appointment: {str(e)}"}
+    finally:
+        session.close()
+"""
 def cancel_appointment_slot(patient_id: int, slot_id: int) -> dict:
-    """Cancels a booked appointment slot and frees it up for other patients."""
+    #Cancels a booked appointment slot and frees it up for other patients.
     session = SessionLocal()
     try:
         appt = session.query(Appointment).filter_by(patient_id=patient_id, slot_id=slot_id).first()
@@ -151,7 +198,8 @@ def cancel_appointment_slot(patient_id: int, slot_id: int) -> dict:
         return {"status": "success", "message": f"Appointment for slot #{slot_id} cancelled successfully."}
     finally:
         session.close()
-
+"""
+        
 def reschedule_appointment_slot(patient_id: int, old_slot_id: int, new_slot_id: int, reason: str = "Rescheduled") -> dict:
     """Atomically reschedules an appointment from an existing slot to a new slot."""
     cancel_res = cancel_appointment_slot(patient_id=patient_id, slot_id=old_slot_id)
